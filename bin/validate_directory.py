@@ -33,6 +33,13 @@ OPTIONS
     -l LOG_LEVEL, --log-level LOG_LEVEL
         set logging level to one of debug, info, warn (the default), or error
 
+RETURNS
+    0   if all files validated successfully
+    1   if any files failed validation
+
+    To get a message displayed showing if files passed validation use the
+    "-l debug" option.
+
 ENVIRONMENT VARIABLES
 
     The primavera-val directory must be in PYTHONPATH

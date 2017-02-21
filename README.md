@@ -14,8 +14,9 @@ the top-level directory:
 4. the data is contiguous
 5. that a random data point can be read from each file
 
+#### Usage
 ```
-Usage: validate_directory.py [-h] [-f FILE_FORMAT] [-l LOG_LEVEL] directory
+validate_directory.py [-h] [-f FILE_FORMAT] [-l LOG_LEVEL] directory
 
 Validate a directory of PRIMAVERA data
 
@@ -31,9 +32,19 @@ optional arguments:
                         set logging level to one of debug, info, warn (the
                         default), or error
 ```
+#### Return Values
+`0` if all files validated successfully
 
-Requires:
-    Iris: http://scitools.org.uk/iris/
-        Tested under Iris 1.10 as installed at JASMIN
+`1` if any files failed validation
+
+To get a message displayed showing if files passed validation use the
+`-l debug` option.
+
+
+#### Requires
+
+Iris http://scitools.org.uk/iris/ Tested under Iris 1.10 as installed at JASMIN
+
+#### Environment Variables
 
 The PYTHONPATH environment variable must include the primavera-val directory.
