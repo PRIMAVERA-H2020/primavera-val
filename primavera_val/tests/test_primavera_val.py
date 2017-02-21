@@ -14,6 +14,7 @@ from iris.tests.stock import realistic_3d
 from primavera_val import (identify_filename_metadata, _check_contiguity,
                            _check_start_end_times, FileValidationError)
 
+
 class TestIdentifyFilenameMetadata(unittest.TestCase):
     @mock.patch('primavera_val.os.path.getsize')
     def setUp(self, mock_getsize):
@@ -28,7 +29,7 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
                       '19500101-19501230.nc')
 
         self.metadata_6 = identify_filename_metadata(filename_6,
-                                                   file_format='CMIP6')
+                                                     file_format='CMIP6')
 
     def test_cmor_name(self):
         self.assertEqual(self.metadata_5['cmor_name'], 'clt')
@@ -57,7 +58,8 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
     def test_bad_date_format(self, mock_logger):
         filename = 'clt_Amon_Monty_historical_r1i1p1_1859-1884.nc'
         self.assertRaises(FileValidationError,
-            identify_filename_metadata, filename, file_format='CMIP5')
+                          identify_filename_metadata, filename,
+                          file_format='CMIP5')
 
     def test_cmor_name_6(self):
         self.assertEqual(self.metadata_6['cmor_name'], 'prc')
@@ -89,7 +91,8 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
     def test_bad_date_format_6(self, mock_logger):
         filename = 'prc_day_highres-future_HadGEM3_r1i1p1f1_gn_1950-1950.nc'
         self.assertRaises(FileValidationError,
-            identify_filename_metadata, filename, file_format='CMIP6')
+                          identify_filename_metadata, filename,
+                          file_format='CMIP6')
 
 
 class TestCheckStartEndTimes(unittest.TestCase):
@@ -97,17 +100,17 @@ class TestCheckStartEndTimes(unittest.TestCase):
         self.cube = realistic_3d()
 
         self.metadata_1 = {'basename': 'file.nc',
-            'start_date': PartialDateTime(year=2014, month=12),
-            'end_date': PartialDateTime(year=2014, month=12)}
+                           'start_date': PartialDateTime(year=2014, month=12),
+                           'end_date': PartialDateTime(year=2014, month=12)}
         self.metadata_2 = {'basename': 'file.nc',
-            'start_date': PartialDateTime(year=2014, month=11),
-            'end_date': PartialDateTime(year=2014, month=12)}
+                           'start_date': PartialDateTime(year=2014, month=11),
+                           'end_date': PartialDateTime(year=2014, month=12)}
         self.metadata_3 = {'basename': 'file.nc',
-            'start_date': PartialDateTime(year=2013, month=12),
-            'end_date': PartialDateTime(year=2014, month=12)}
+                           'start_date': PartialDateTime(year=2013, month=12),
+                           'end_date': PartialDateTime(year=2014, month=12)}
         self.metadata_4 = {'basename': 'file.nc',
-            'start_date': PartialDateTime(year=2014, month=12),
-            'end_date': PartialDateTime(year=2015, month=9)}
+                           'start_date': PartialDateTime(year=2014, month=12),
+                           'end_date': PartialDateTime(year=2015, month=9)}
 
         # mock logger to prevent it displaying messages on screen
         patch = mock.patch('primavera_val.logger')
@@ -119,15 +122,15 @@ class TestCheckStartEndTimes(unittest.TestCase):
 
     def test_fails_start_month(self):
         self.assertRaises(FileValidationError, _check_start_end_times,
-            self.cube, self.metadata_2)
+                          self.cube, self.metadata_2)
 
     def test_fails_start_year(self):
         self.assertRaises(FileValidationError, _check_start_end_times,
-            self.cube, self.metadata_3)
+                          self.cube, self.metadata_3)
 
     def test_fails_end(self):
         self.assertRaises(FileValidationError, _check_start_end_times,
-            self.cube, self.metadata_4)
+                          self.cube, self.metadata_4)
 
 
 class TestCheckContiguity(unittest.TestCase):
@@ -149,7 +152,7 @@ class TestCheckContiguity(unittest.TestCase):
 
     def test_not_contiguous(self):
         self.assertRaises(FileValidationError, _check_contiguity,
-            self.bad_cube, {'basename': 'file.nc'})
+                          self.bad_cube, {'basename': 'file.nc'})
 
 
 class TestCheckDataPoint(unittest.TestCase):

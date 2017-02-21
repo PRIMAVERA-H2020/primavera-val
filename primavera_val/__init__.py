@@ -26,24 +26,24 @@ FREQUENCY_VALUES = ['ann', 'mon', 'day', '6hr', '3hr', '1hr', 'subhr', 'fx']
 
 
 class FileValidationError(Exception):
-    def __init__(self, message=''):
-        """
-        An exception to indicate that a data file has failed validation.
+    """
+    An exception to indicate that a data file has failed validation.
 
-        :param str message: The error message text.
-        """
+    :param str message: The error message text.
+    """
+    def __init__(self, message=''):
         Exception.__init__(self)
         self.message = message
 
 
 class SubmissionError(Exception):
-    def __init__(self, message=''):
-        """
-        An exception to indicate that there has been an error that means that
-        the data submission cannot continue.
+    """
+    An exception to indicate that there has been an error that means that
+    the data submission cannot continue.
 
-        :param str message: The error message text.
-        """
+    :param str message: The error message text.
+    """
+    def __init__(self, message=''):
         Exception.__init__(self)
         self.message = message
 
@@ -86,10 +86,10 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
     """
     if file_format == 'CMIP5':
         components = ['cmor_name', 'table', 'climate_model', 'experiment',
-        'rip_code', 'date_string']
+                      'rip_code', 'date_string']
     elif file_format == 'CMIP6':
         components = ['cmor_name', 'table', 'experiment', 'climate_model',
-        'rip_code', 'grid', 'date_string']
+                      'rip_code', 'grid', 'date_string']
     else:
         raise NotImplementedError('file_format must be CMIP5 or CMIP6')
 
@@ -197,7 +197,8 @@ def load_cube(filename):
 
     var_name = os.path.basename(filename).split('_')[0]
 
-    var_cubes = cubes.extract(iris.Constraint(cube_func=lambda cube: cube.var_name == var_name))
+    var_cubes = cubes.extract(iris.Constraint(cube_func=lambda cube:
+                                              cube.var_name == var_name))
 
     if not var_cubes:
         msg = "Filename '{}' does not load to a single variable".format(filename)
@@ -223,10 +224,11 @@ def _make_partial_date_time(date_string):
     """
     if len(date_string) == 6:
         pdt_str = PartialDateTime(year=int(date_string[0:4]),
-            month=int(date_string[4:6]))
+                                  month=int(date_string[4:6]))
     elif len(date_string) == 8:
         pdt_str = PartialDateTime(year=int(date_string[0:4]),
-            month=int(date_string[4:6]), day=int(date_string[6:8]))
+                                  month=int(date_string[4:6]),
+                                  day=int(date_string[6:8]))
     else:
         raise ValueError('Unknown date string format')
 
@@ -251,12 +253,12 @@ def _check_start_end_times(cube, metadata):
 
     if file_start_date != data_start:
         msg = ('Start date in filename does not match the first time in the '
-            'file ({}): {}'.format(str(data_start), metadata['basename']))
+               'file ({}): {}'.format(str(data_start), metadata['basename']))
         logger.debug(msg)
         raise FileValidationError(msg)
     elif file_end_date != data_end:
         msg = ('End date in filename does not match the last time in the '
-            'file ({}): {}'.format(str(data_end), metadata['basename']))
+               'file ({}): {}'.format(str(data_end), metadata['basename']))
         logger.debug(msg)
         raise FileValidationError(msg)
     else:
@@ -276,7 +278,7 @@ def _check_contiguity(cube, metadata):
 
     if not time_coord.is_contiguous():
         msg = ('The points in the time dimension in the file are not '
-            'contiguous: {}'.format(metadata['basename']))
+               'contiguous: {}'.format(metadata['basename']))
         logger.debug(msg)
         raise FileValidationError(msg)
     else:
@@ -300,7 +302,7 @@ def _check_data_point(cube, metadata):
     point_index = tuple(point_index)
 
     try:
-        data_point = cube.data[point_index]
+        _data_point = cube.data[point_index]
     except Exception:
         msg = 'Unable to extract data point {} from file: {}'.format(
             point_index, metadata['basename'])
