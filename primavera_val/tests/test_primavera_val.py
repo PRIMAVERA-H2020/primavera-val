@@ -11,7 +11,8 @@ import iris
 from iris.time import PartialDateTime
 from iris.tests.stock import realistic_3d
 
-from primavera_val import (identify_filename_metadata, _check_contiguity,
+from primavera_val import (identify_filename_metadata,
+                           identify_contents_metadata, _check_contiguity,
                            _check_start_end_times, FileValidationError)
 
 
@@ -93,6 +94,50 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
         self.assertRaises(FileValidationError,
                           identify_filename_metadata, filename,
                           file_format='CMIP6')
+
+
+class TestIdentifyContentsMetadata(unittest.TestCase):
+    def setUp(self):
+        self.cube = realistic_3d()
+        self.cube.attributes['institution_id'] = 'ABCD'
+
+        self.expected = {'var_name': None, 'units': 'K', 'long_name': None,
+                         'standard_name': 'air_potential_temperature',
+                         'time_units': 'hours since 1970-01-01 00:00:00',
+                         'calendar': 'gregorian', 'activity_id': 'HighResMIP',
+                         'institute': 'ABCD'}
+
+    def test_default_activity(self):
+        actual = identify_contents_metadata(self.cube, 'abc.nc')
+        self.assertEqual(actual, self.expected)
+
+    def test_custom_activity(self):
+        self.cube.attributes['activity_id'] = 'ZYXW'
+        self.expected['activity_id'] = 'ZYXW'
+
+        actual = identify_contents_metadata(self.cube, 'abc.nc')
+        self.assertEqual(actual, self.expected)
+
+    def test_cmip5_institute(self):
+        del self.cube.attributes['institution_id']
+        self.cube.attributes['institute_id'] = 'EFGH'
+        self.expected['institute'] = 'EFGH'
+
+        actual = identify_contents_metadata(self.cube, 'abc.nc')
+        self.assertEqual(actual, self.expected)
+
+    @mock.patch('primavera_val.logger')
+    def test_exception_raised(self, mock_logger):
+        del self.cube.attributes['institution_id']
+
+        self.assertRaisesRegexp(
+            FileValidationError,
+            'Unable to extract metadata from the contents of file abc.nc\n'
+            'institute_id',
+            identify_contents_metadata,
+            self.cube,
+            'abc.nc'
+        )
 
 
 class TestCheckStartEndTimes(unittest.TestCase):

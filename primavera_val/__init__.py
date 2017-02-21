@@ -28,50 +28,8 @@ FREQUENCY_VALUES = ['ann', 'mon', 'day', '6hr', '3hr', '1hr', 'subhr', 'fx']
 class FileValidationError(Exception):
     """
     An exception to indicate that a data file has failed validation.
-
-    :param str message: The error message text.
     """
-    def __init__(self, message=''):
-        Exception.__init__(self)
-        self.message = message
-
-
-class SubmissionError(Exception):
-    """
-    An exception to indicate that there has been an error that means that
-    the data submission cannot continue.
-
-    :param str message: The error message text.
-    """
-    def __init__(self, message=''):
-        Exception.__init__(self)
-        self.message = message
-
-
-def main():
-    """
-    Run the checks
-    """
-    filename = ''
-    file_format = 'CMIP6'
-    output = []
-
-    try:
-        metadata = identify_filename_metadata(filename, file_format)
-
-        cube = load_cube(filename)
-        metadata.update(identify_contents_metadata(cube))
-
-        validate_file_contents(cube, metadata)
-    except SubmissionError:
-        msg = ('A serious file error means the submission cannot continue: '
-               '{}'.format(filename))
-        logger.error(msg)
-    except FileValidationError:
-        msg = 'File failed validation: {}'.format(filename)
-        logger.warning(msg)
-    else:
-        output.append(metadata)
+    pass
 
 
 def identify_filename_metadata(filename, file_format='CMIP6'):
@@ -137,30 +95,38 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
     return metadata
 
 
-def identify_contents_metadata(cube):
+def identify_contents_metadata(cube, filename):
     """
     Uses Iris to get additional metadata from the files contents
 
     :param iris.cube.Cube cube: The loaded file to check
+    :param str filename: the name of the file that the cube was loaded from
     :returns: A dictionary of the identified metadata
     """
     metadata = {}
 
-    # This could be None if cube.var_name isn't defined
-    metadata['var_name'] = cube.var_name
-    metadata['units'] = str(cube.units)
-    metadata['long_name'] = cube.long_name
-    metadata['standard_name'] = cube.standard_name
-    metadata['time_units'] = cube.coord('time').units.origin
-    metadata['calendar'] = cube.coord('time').units.calendar
-    # CMIP5 doesn't have an activity id and so supply a default
-    metadata['activity_id'] = cube.attributes.get('activity_id', 'HighResMIP')
     try:
-        metadata['institute'] = cube.attributes['institution_id']
-    except KeyError:
-        # CMIP5 uses institute_id but we should not be processing CMIP5 data
-        # but handle it just in case
-        metadata['institute'] = cube.attributes['institute_id']
+        # This could be None if cube.var_name isn't defined
+        metadata['var_name'] = cube.var_name
+        metadata['units'] = str(cube.units)
+        metadata['long_name'] = cube.long_name
+        metadata['standard_name'] = cube.standard_name
+        metadata['time_units'] = cube.coord('time').units.origin
+        metadata['calendar'] = cube.coord('time').units.calendar
+        # CMIP5 doesn't have an activity id and so supply a default
+        metadata['activity_id'] = cube.attributes.get('activity_id',
+                                                      'HighResMIP')
+        try:
+            metadata['institute'] = cube.attributes['institution_id']
+        except KeyError:
+            # CMIP5 uses institute_id but we should not be processing CMIP5
+            # data but handle it just in case
+            metadata['institute'] = cube.attributes['institute_id']
+    except Exception as exc:
+        msg = ('Unable to extract metadata from the contents of file {}\n{}'.
+               format(filename, exc.message))
+        logger.error(msg)
+        raise FileValidationError(msg)
 
     return metadata
 
@@ -201,11 +167,34 @@ def load_cube(filename):
                                               cube.var_name == var_name))
 
     if not var_cubes:
-        msg = "Filename '{}' does not load to a single variable".format(filename)
+        msg = ("Filename '{}' does not load to a single variable".
+               format(filename))
         logger.debug(msg)
         raise FileValidationError(msg)
 
     return var_cubes[0]
+
+
+def list_files(directory, suffix='.nc'):
+    """
+    Return a list of all the files with the specified suffix in the submission
+    directory structure and sub-directories.
+
+    :param str directory: The root directory of the submission
+    :param str suffix: The suffix of the files of interest
+    :returns: A list of absolute filepaths
+    """
+    nc_files = []
+
+    dir_files = os.listdir(directory)
+    for filename in dir_files:
+        file_path = os.path.join(directory, filename)
+        if os.path.isdir(file_path):
+            nc_files.extend(list_files(file_path))
+        elif file_path.endswith(suffix):
+            nc_files.append(file_path)
+
+    return nc_files
 
 
 def _make_partial_date_time(date_string):
