@@ -8,12 +8,13 @@ A simple data validation test for PRIMAVERA stream 1 data files. The following
 checks are performed on all files with a .nc suffix in the directories below
 the top-level directory:
 
-        1. filenames are correctly formatted
-        2. that essential metadata items can be read from each file's contents
-        3. the start and end times in the filenames match those in the files
-        4. the data is contiguous
-        5. that a random data point can be read from each file
+1. filenames are correctly formatted
+2. that essential metadata items can be read from each file's contents
+3. the start and end times in the filenames match those in the files
+4. the data is contiguous
+5. that a random data point can be read from each file
 
+```
 Usage: validate_directory.py [-h] [-f FILE_FORMAT] [-l LOG_LEVEL] directory
 
 Validate a directory of PRIMAVERA data
@@ -29,7 +30,7 @@ optional arguments:
   -l LOG_LEVEL, --log-level LOG_LEVEL
                         set logging level to one of debug, info, warn (the
                         default), or error
-
+```
 
 Requires:
     Iris: http://scitools.org.uk/iris/
