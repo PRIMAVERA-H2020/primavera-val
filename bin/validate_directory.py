@@ -70,8 +70,8 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description='Validate a directory of '
                                                  'PRIMAVERA data ')
-    parser.add_argument('directory', help='the top-level directory of the '
-                                          'files to check')
+    parser.add_argument('directory', help='the top-level directory containing '
+                                          'the files to check')
     parser.add_argument('-f', '--file-format', default='CMIP6',
                         help='the CMOR version of the input netCDF files '
                              'being submitted (CMIP5 or CMIP6) (default: '

@@ -6,7 +6,7 @@ Please see LICENSE.rst for license details.
 
 A simple data validation test for PRIMAVERA stream 1 data files. The following
 checks are performed on all files with a .nc suffix in the directories below
-the top-level directory:
+the directory specified:
 
 1. filenames are correctly formatted
 2. that essential metadata items can be read from each file's contents
@@ -21,7 +21,7 @@ validate_directory.py [-h] [-f FILE_FORMAT] [-l LOG_LEVEL] directory
 Validate a directory of PRIMAVERA data
 
 positional arguments:
-  directory             the top-level directory of the files to check
+  directory             the top-level directory containing the files to check
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -43,8 +43,8 @@ To get a message displayed showing if files passed validation use the
 
 #### Requires
 
-Iris http://scitools.org.uk/iris/ Tested under Iris 1.10 as installed at JASMIN
+Iris (http://scitools.org.uk/iris/) Tested under Iris 1.10 as installed at JASMIN
 
 #### Environment Variables
 
-The PYTHONPATH environment variable must include the primavera-val directory.
+The `PYTHONPATH` environment variable must include the primavera-val directory.
