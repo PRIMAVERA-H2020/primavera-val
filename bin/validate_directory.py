@@ -51,6 +51,7 @@ DEPENDENCIES:
 """
 import argparse
 import logging
+import logging.config
 import os
 import sys
 
@@ -127,26 +128,42 @@ def main(args):
 if __name__ == '__main__':
     cmd_args = parse_args()
 
-    # Disable propagation and discard any existing handlers.
-    logger.propagate = False
-    if len(logger.handlers):
-        logger.handlers = []
-
-    # set-up the logger
-    console = logging.StreamHandler(stream=sys.stdout)
-    fmtr = logging.Formatter(fmt=DEFAULT_LOG_FORMAT)
+    # determine the log level
     if cmd_args.log_level:
         try:
-            logger.setLevel(getattr(logging, cmd_args.log_level.upper()))
+            log_level = getattr(logging, cmd_args.log_level.upper())
         except AttributeError:
             logger.setLevel(logging.WARNING)
             logger.error('log-level must be one of: debug, info, warn or '
                          'error')
             sys.exit(1)
     else:
-        logger.setLevel(DEFAULT_LOG_LEVEL)
-    console.setFormatter(fmtr)
-    logger.addHandler(console)
+        log_level = DEFAULT_LOG_LEVEL
+
+    # configure the logger
+    logging.config.dictConfig({
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'standard': {
+                'format': DEFAULT_LOG_FORMAT,
+            },
+        },
+        'handlers': {
+            'default': {
+                'level': log_level,
+                'class': 'logging.StreamHandler',
+                'formatter': 'standard'
+            },
+        },
+        'loggers': {
+            '': {
+                'handlers': ['default'],
+                'level': log_level,
+                'propagate': True
+            }
+        }
+    })
 
     # run the code
     main(cmd_args)
