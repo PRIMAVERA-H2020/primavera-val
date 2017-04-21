@@ -12,6 +12,7 @@ Requires:
 import logging
 import os
 import random
+import re
 
 import iris
 from iris.time import PartialDateTime
@@ -64,10 +65,13 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
     try:
         for cmpt_name, cmpt in zip(components, filename_sects):
             if cmpt_name == 'date_string':
+                frequency = _get_frequency(metadata['table'])
                 start_date, end_date = cmpt.split('-')
                 try:
-                    metadata['start_date'] = _make_partial_date_time(start_date)
-                    metadata['end_date'] = _make_partial_date_time(end_date)
+                    metadata['start_date'] = _make_partial_date_time(
+                        start_date, frequency)
+                    metadata['end_date'] = _make_partial_date_time(
+                        end_date, frequency)
                 except ValueError:
                     msg = 'Unknown date format in filename: {}'.format(filename)
                     logger.warning(msg)
@@ -194,7 +198,32 @@ def list_files(directory, suffix='.nc'):
     return nc_files
 
 
-def _make_partial_date_time(date_string):
+def _get_frequency(table_name):
+    """
+    Finds the frequency of the data in the specified table name.
+    
+    :param str table_name: The name of the table 
+    :returns: The frequency of the data in the table
+    :rtype: str
+    :raises ValueError: If no frequency can be found in the table name
+    """
+    # remove Prim from the start of table names as this is not in capitals
+    if table_name.startswith('Prim'):
+        fixed_primavera = table_name[4:]
+    else:
+        fixed_primavera = table_name
+
+    # The frequency is the first group of lower-case characters and digits in
+    # the table name.
+    components = re.search(r'[a-z\d]+', fixed_primavera)
+    if components:
+        return components.group(0)
+    else:
+        raise ValueError('Unable to calculate frequency from table name {}'.
+                         format(table_name))
+
+
+def _make_partial_date_time(date_string, frequency):
     """
     Convert the fields in `date_string` into a PartialDateTime object. Formats
     that are known about are:
@@ -203,20 +232,36 @@ def _make_partial_date_time(date_string):
     YYYYMMDD
 
     :param str date_string: The date string to process
+    :param str frequency: The frequency of data in the file
     :returns: An Iris PartialDateTime object containing as much information as
         could be deduced from date_string
     :rtype: iris.time.PartialDateTime
     :raises ValueError: If the string is not in a known format.
     """
-    if len(date_string) == 6:
+    if frequency in ('yr', 'dec'):
+        pdt_str = PartialDateTime(year=int(date_string[0:4]))
+    elif frequency == 'mon':
         pdt_str = PartialDateTime(year=int(date_string[0:4]),
                                   month=int(date_string[4:6]))
-    elif len(date_string) == 8:
+    elif frequency == 'day':
         pdt_str = PartialDateTime(year=int(date_string[0:4]),
                                   month=int(date_string[4:6]),
                                   day=int(date_string[6:8]))
+    elif frequency in ('6hr', '3hr', '1hr', 'hr'):
+        pdt_str = PartialDateTime(year=int(date_string[0:4]),
+                                  month=int(date_string[4:6]),
+                                  day=int(date_string[6:8]),
+                                  hour=int(date_string[8:10]),
+                                  minute=int(date_string[10:12]))
+    elif frequency == 'subhr':
+        pdt_str = PartialDateTime(year=int(date_string[0:4]),
+                                  month=int(date_string[4:6]),
+                                  day=int(date_string[6:8]),
+                                  hour=int(date_string[8:10]),
+                                  minute=int(date_string[10:12]),
+                                  second=int(date_string[12:14]))
     else:
-        raise ValueError('Unknown date string format')
+        raise ValueError('Unsupported frequency string {}'.format(frequency))
 
     return pdt_str
 

@@ -11,7 +11,7 @@ import iris
 from iris.time import PartialDateTime
 from iris.tests.stock import realistic_3d
 
-from primavera_val import (identify_filename_metadata,
+from primavera_val import (identify_filename_metadata, _get_frequency,
                            identify_contents_metadata, _check_contiguity,
                            _check_start_end_times, FileValidationError)
 
@@ -204,6 +204,79 @@ class TestCheckDataPoint(unittest.TestCase):
     def test_todo(self):
         # TODO: figure put how to test this function
         pass
+
+
+class TestGetFrequency(unittest.TestCase):
+    def setUp(self):
+        self.mip_tables = {
+            '3hr': '3hr',
+            '6hrLev': '6hr',
+            '6hrPlev': '6hr',
+            '6hrPlevPt': '6hr',
+            'AERday': 'day',
+            'AERfx': 'fx',
+            'AERhr': 'hr',
+            'AERmon': 'mon',
+            'AERmonZ': 'mon',
+            'Amon': 'mon',
+            'CF3hr': '3hr',
+            'CFday': 'day',
+            'CFmon': 'mon',
+            'CFsubhr': 'subhr',
+            'CFsubhrOff': 'subhr',
+            'E1hr': '1hr',
+            'E1hrClimMon': '1hr',
+            'E3hr': '3hr',
+            'E3hrPt': '3hr',
+            'E6hrZ': '6hr',
+            'Eday': 'day',
+            'EdayZ': 'day',
+            'Efx': 'fx',
+            'Emon': 'mon',
+            'EmonZ': 'mon',
+            'Esubhr': 'subhr',
+            'Eyr': 'yr',
+            'IfxAnt': 'fx',
+            'IfxGre': 'fx',
+            'ImonAnt': 'mon',
+            'ImonGre': 'mon',
+            'IyrAnt': 'yr',
+            'IyrGre': 'yr',
+            'LImon': 'mon',
+            'Lmon': 'mon',
+            'Oclim': 'clim',
+            'Oday': 'day',
+            'Odec': 'dec',
+            'Ofx': 'fx',
+            'Omon': 'mon',
+            'Oyr': 'yr',
+            'aero': 'aero',
+            'cfOff': 'cf',
+            'cfSites': 'cf',
+            'Prim1hr': '1hr',
+            'Prim3hr': '3hr',
+            'Prim3hrPt': '3hr',
+            'Prim6hr': '6hr',
+            'Prim6hrPt': '6hr',
+            'Primday': 'day',
+            'Primmon': 'mon',
+            'PrimO6hr': '6hr',
+            'PrimOday': 'day',
+            'PrimOmon': 'mon',
+            'PrimSIday': 'day',
+            'PrimmonZ': 'mon',
+            'PrimdayPt': 'day',
+            'SIday': 'day',
+            'SImon': 'mon',
+            'day': 'day',
+            'fx': 'fx',
+            'grids': 'grids'
+        }
+
+    def test_all_table_names(self):
+        for mip_table in self.mip_tables:
+            self.assertEqual(_get_frequency(mip_table),
+                             self.mip_tables[mip_table])
 
 
 if __name__ == '__main__':
