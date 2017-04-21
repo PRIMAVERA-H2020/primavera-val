@@ -43,7 +43,7 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
         components = ['cmor_name', 'table', 'climate_model', 'experiment',
                       'rip_code', 'date_string']
     elif file_format == 'CMIP6':
-        components = ['cmor_name', 'table', 'experiment', 'climate_model',
+        components = ['cmor_name', 'table', 'climate_model', 'experiment',
                       'rip_code', 'grid', 'date_string']
     else:
         raise NotImplementedError('file_format must be CMIP5 or CMIP6')

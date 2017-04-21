@@ -26,7 +26,7 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
         self.metadata_5 = identify_filename_metadata(filename_5,
                                                      file_format='CMIP5')
 
-        filename_6 = ('prc_day_highres-future_HadGEM3_r1i1p1f1_gn_'
+        filename_6 = ('prc_day_HadGEM3_highres-future_r1i1p1f1_gn_'
                       '19500101-19501230.nc')
 
         self.metadata_6 = identify_filename_metadata(filename_6,
