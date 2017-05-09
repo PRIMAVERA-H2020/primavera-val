@@ -9,15 +9,12 @@ Requires:
     Iris: http://scitools.org.uk/iris/
         Tested under Iris 1.10 as installed at JASMIN
 """
-import logging
 import os
 import random
 import re
 
 import iris
 from iris.time import PartialDateTime
-
-logger = logging.getLogger(__name__)
 
 
 FREQUENCY_VALUES = ['ann', 'mon', 'day', '6hr', '3hr', '1hr', 'subhr', 'fx']
@@ -74,13 +71,11 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
                         end_date, frequency)
                 except ValueError:
                     msg = 'Unknown date format in filename: {}'.format(filename)
-                    logger.warning(msg)
                     raise FileValidationError(msg)
             else:
                 metadata[cmpt_name] = cmpt
     except ValueError:
         msg = 'Unknown filename format: {}'.format(filename)
-        logger.warning(msg)
         raise FileValidationError(msg)
 
     metadata['filesize'] = os.path.getsize(filename)
@@ -126,7 +121,6 @@ def identify_contents_metadata(cube, filename):
     except Exception as exc:
         msg = ('Unable to extract metadata from the contents of file {}\n{}'.
                format(filename, exc.message))
-        logger.warning(msg)
         raise FileValidationError(msg)
 
     return metadata
@@ -159,7 +153,6 @@ def load_cube(filename):
         cubes = iris.load(filename)
     except Exception:
         msg = 'Unable to load data from file: {}'.format(filename)
-        logger.warning(msg)
         raise FileValidationError(msg)
 
     var_name = os.path.basename(filename).split('_')[0]
@@ -170,7 +163,6 @@ def load_cube(filename):
     if not var_cubes:
         msg = ("Filename '{}' does not load to a single variable".
                format(filename))
-        logger.warning(msg)
         raise FileValidationError(msg)
 
     return var_cubes[0]
@@ -285,12 +277,10 @@ def _check_start_end_times(cube, metadata):
     if file_start_date != data_start:
         msg = ('Start date in filename does not match the first time in the '
                'file ({}): {}'.format(str(data_start), metadata['basename']))
-        logger.warning(msg)
         raise FileValidationError(msg)
     elif file_end_date != data_end:
         msg = ('End date in filename does not match the last time in the '
                'file ({}): {}'.format(str(data_end), metadata['basename']))
-        logger.warning(msg)
         raise FileValidationError(msg)
     else:
         return True
@@ -307,12 +297,15 @@ def _check_contiguity(cube, metadata):
     """
     time_coord = cube.coord('time')
 
-    if not time_coord.is_contiguous():
-        msg = ('The points in the time dimension in the file are not '
-               'contiguous: {}'.format(metadata['basename']))
-        logger.warning(msg)
-        raise FileValidationError(msg)
+    if time_coord.has_bounds():
+        if not time_coord.is_contiguous():
+            msg = ('The points in the time dimension in the file are not '
+                   'contiguous: {}'.format(metadata['basename']))
+            raise FileValidationError(msg)
+        else:
+            return True
     else:
+        # The time coordinate has no bounds and so contiguity cannot be checked
         return True
 
 
@@ -337,7 +330,6 @@ def _check_data_point(cube, metadata):
     except Exception:
         msg = 'Unable to extract data point {} from file: {}'.format(
             point_index, metadata['basename'])
-        logger.warning(msg)
         raise FileValidationError(msg)
     else:
         return True
