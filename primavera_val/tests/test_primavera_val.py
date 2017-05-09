@@ -55,8 +55,7 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
         self.assertEqual(self.metadata_5['end_date'],
                          PartialDateTime(year=1884, month=11))
 
-    @mock.patch('primavera_val.logger')
-    def test_bad_date_format(self, mock_logger):
+    def test_bad_date_format(self):
         filename = 'clt_Amon_Monty_historical_r1i1p1_1859-1884.nc'
         self.assertRaises(FileValidationError,
                           identify_filename_metadata, filename,
@@ -88,8 +87,7 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
         self.assertEqual(self.metadata_6['end_date'],
                          PartialDateTime(year=1950, month=12, day=30))
 
-    @mock.patch('primavera_val.logger')
-    def test_bad_date_format_6(self, mock_logger):
+    def test_bad_date_format_6(self):
         filename = 'prc_day_highres-future_HadGEM3_r1i1p1f1_gn_1950-1950.nc'
         self.assertRaises(FileValidationError,
                           identify_filename_metadata, filename,
@@ -126,8 +124,7 @@ class TestIdentifyContentsMetadata(unittest.TestCase):
         actual = identify_contents_metadata(self.cube, 'abc.nc')
         self.assertEqual(actual, self.expected)
 
-    @mock.patch('primavera_val.logger')
-    def test_exception_raised(self, mock_logger):
+    def test_exception_raised(self):
         del self.cube.attributes['institution_id']
 
         self.assertRaisesRegexp(
@@ -157,11 +154,6 @@ class TestCheckStartEndTimes(unittest.TestCase):
                            'start_date': PartialDateTime(year=2014, month=12),
                            'end_date': PartialDateTime(year=2015, month=9)}
 
-        # mock logger to prevent it displaying messages on screen
-        patch = mock.patch('primavera_val.logger')
-        self.mock_logger = patch.start()
-        self.addCleanup(patch.stop)
-
     def test_equals(self):
         self.assertTrue(_check_start_end_times(self.cube, self.metadata_1))
 
@@ -180,11 +172,6 @@ class TestCheckStartEndTimes(unittest.TestCase):
 
 class TestCheckContiguity(unittest.TestCase):
     def setUp(self):
-        # mock logger to prevent it displaying messages on screen
-        patch = mock.patch('primavera_val.logger')
-        self.mock_logger = patch.start()
-        self.addCleanup(patch.stop)
-
         self.good_cube = realistic_3d()
         self.good_cube.coord('time').guess_bounds()
 
