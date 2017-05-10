@@ -245,22 +245,22 @@ def _make_partial_date_time(date_string, frequency):
     :raises ValueError: If the string is not in a known format.
     """
     if frequency in ('yr', 'dec'):
-        pdt_str = PartialDateTime(year=int(date_string[0:4]))
+        pdt = PartialDateTime(year=int(date_string[0:4]))
     elif frequency == 'mon':
-        pdt_str = PartialDateTime(year=int(date_string[0:4]),
+        pdt = PartialDateTime(year=int(date_string[0:4]),
                                   month=int(date_string[4:6]))
     elif frequency == 'day':
-        pdt_str = PartialDateTime(year=int(date_string[0:4]),
+        pdt = PartialDateTime(year=int(date_string[0:4]),
                                   month=int(date_string[4:6]),
                                   day=int(date_string[6:8]))
     elif frequency in ('6hr', '3hr', '1hr', 'hr'):
-        pdt_str = PartialDateTime(year=int(date_string[0:4]),
+        pdt = PartialDateTime(year=int(date_string[0:4]),
                                   month=int(date_string[4:6]),
                                   day=int(date_string[6:8]),
                                   hour=int(date_string[8:10]),
                                   minute=int(date_string[10:12]))
     elif frequency == 'subhr':
-        pdt_str = PartialDateTime(year=int(date_string[0:4]),
+        pdt = PartialDateTime(year=int(date_string[0:4]),
                                   month=int(date_string[4:6]),
                                   day=int(date_string[6:8]),
                                   hour=int(date_string[8:10]),
@@ -269,7 +269,7 @@ def _make_partial_date_time(date_string, frequency):
     else:
         raise ValueError('Unsupported frequency string {}'.format(frequency))
 
-    return pdt_str
+    return pdt
 
 
 def _check_start_end_times(cube, metadata):
