@@ -148,23 +148,24 @@ def load_cube(filename):
     :raises FileValidationError: If the file generates more than a single cube
     """
     try:
-        cubes = iris.load(filename)
-    except AttributeError:
-        # Until https://github.com/SciTools/iris/pull/2485 is complete
-        # add this fix for certain hybrid height (model level) variables
-        cubes = iris.load_raw(filename)
-        if len(cubes) != 2:
-            msg = ('More than two cubes found when fixing hybrid height '
-                   'bounds in file: {}'.format(filename))
-            raise FileValidationError(msg)
-        for cube in cubes:
-            if cube.var_name == 'b_bnds':
-                bounds_cube = cube
-            else:
-                data_cube = cube
-        b_coord = cube.coord('vertical coordinate formula term: b(k)')
-        b_coord.bounds = bounds_cube.data
-        cubes = iris.cube.CubeList([data_cube])
+        try:
+            cubes = iris.load(filename)
+        except AttributeError:
+            # Until https://github.com/SciTools/iris/pull/2485 is complete
+            # add this fix for certain hybrid height (model level) variables
+            cubes = iris.load_raw(filename)
+            if len(cubes) != 2:
+                msg = ('More than two cubes found when fixing hybrid height '
+                       'bounds in file: {}'.format(filename))
+                raise FileValidationError(msg)
+            for cube in cubes:
+                if cube.var_name == 'b_bnds':
+                    bounds_cube = cube
+                else:
+                    data_cube = cube
+            b_coord = cube.coord('vertical coordinate formula term: b(k)')
+            b_coord.bounds = bounds_cube.data
+            cubes = iris.cube.CubeList([data_cube])
     except Exception:
         msg = 'Unable to load data from file: {}'.format(filename)
         raise FileValidationError(msg)
