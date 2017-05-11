@@ -158,13 +158,20 @@ def load_cube(filename):
                 msg = ('More than two cubes found when fixing hybrid height '
                        'bounds in file: {}'.format(filename))
                 raise FileValidationError(msg)
+            bounds_cube = None
+            data_cube = None
             for cube in cubes:
-                if cube.var_name == 'b_bnds':
+                if cube.var_name.endswith('_bnds'):
                     bounds_cube = cube
                 else:
                     data_cube = cube
-            b_coord = cube.coord('vertical coordinate formula term: b(k)')
-            b_coord.bounds = bounds_cube.data
+            if not bounds_cube or not data_cube:
+                msg = ('Unable to find data and bounds when fixing hybrid '
+                       'height bounds in file: {}'.format(filename))
+                raise FileValidationError(msg)
+            coord_name = bounds_cube.long_name.replace('+1/2', '')
+            bounds_coord = data_cube.coord(coord_name)
+            bounds_coord.bounds = bounds_cube.data
             cubes = iris.cube.CubeList([data_cube])
     except Exception:
         msg = 'Unable to load data from file: {}'.format(filename)
@@ -249,24 +256,24 @@ def _make_partial_date_time(date_string, frequency):
         pdt = PartialDateTime(year=int(date_string[0:4]))
     elif frequency == 'mon':
         pdt = PartialDateTime(year=int(date_string[0:4]),
-                                  month=int(date_string[4:6]))
+                              month=int(date_string[4:6]))
     elif frequency == 'day':
         pdt = PartialDateTime(year=int(date_string[0:4]),
-                                  month=int(date_string[4:6]),
-                                  day=int(date_string[6:8]))
+                              month=int(date_string[4:6]),
+                              day=int(date_string[6:8]))
     elif frequency in ('6hr', '3hr', '1hr', 'hr'):
         pdt = PartialDateTime(year=int(date_string[0:4]),
-                                  month=int(date_string[4:6]),
-                                  day=int(date_string[6:8]),
-                                  hour=int(date_string[8:10]),
-                                  minute=int(date_string[10:12]))
+                              month=int(date_string[4:6]),
+                              day=int(date_string[6:8]),
+                              hour=int(date_string[8:10]),
+                              minute=int(date_string[10:12]))
     elif frequency == 'subhr':
         pdt = PartialDateTime(year=int(date_string[0:4]),
-                                  month=int(date_string[4:6]),
-                                  day=int(date_string[6:8]),
-                                  hour=int(date_string[8:10]),
-                                  minute=int(date_string[10:12]),
-                                  second=int(date_string[12:14]))
+                              month=int(date_string[4:6]),
+                              day=int(date_string[6:8]),
+                              hour=int(date_string[8:10]),
+                              minute=int(date_string[10:12]),
+                              second=int(date_string[12:14]))
     else:
         raise ValueError('Unsupported frequency string {}'.format(frequency))
 
