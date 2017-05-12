@@ -10,7 +10,8 @@ DESCRIPTION
 
     A simple data validation test for PRIMAVERA stream 1 data files. The
     following checks are performed on all files with a .nc suffix in the
-    directories below the top-level directory:
+    directories below the top-level directory, or on the file specified if
+    using the -s option:
 
         1. filenames are correctly formatted
         2. that essential metadata items can be read from each file's contents
