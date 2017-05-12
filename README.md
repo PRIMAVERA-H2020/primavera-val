@@ -6,7 +6,7 @@ Please see LICENSE.rst for license details.
 
 A simple data validation test for PRIMAVERA stream 1 data files. The following
 checks are performed on all files with a .nc suffix in the directories below
-the directory specified:
+the directory specified, or on the file specified if using the -s option:
 
 1. filenames are correctly formatted
 2. that essential metadata items can be read from each file's contents
@@ -16,7 +16,7 @@ the directory specified:
 
 #### Usage
 ```
-validate_directory.py [-h] [-f FILE_FORMAT] [-l LOG_LEVEL] directory
+validate_data.py [-h] [-f FILE_FORMAT] [-s] [-l LOG_LEVEL] directory
 
 Validate a directory of PRIMAVERA data
 
@@ -28,6 +28,7 @@ optional arguments:
   -f FILE_FORMAT, --file-format FILE_FORMAT
                         the CMOR version of the input netCDF files being
                         submitted (CMIP5 or CMIP6) (default: CMIP6)
+  -s, --single-file     validate a single specified file rather than a directory
   -l LOG_LEVEL, --log-level LOG_LEVEL
                         set logging level to one of debug, info, warn (the
                         default), or error

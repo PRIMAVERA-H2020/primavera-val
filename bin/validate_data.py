@@ -4,13 +4,14 @@
 """
 SYNOPSIS
 
-    validate_directory.py [-h] [-f FILE_FORMAT] [-l LOG_LEVEL] directory
+    validate_data.py [-h] [-f FILE_FORMAT] [-s] [-l LOG_LEVEL] directory
 
 DESCRIPTION
 
     A simple data validation test for PRIMAVERA stream 1 data files. The
     following checks are performed on all files with a .nc suffix in the
-    directories below the top-level directory:
+    directories below the top-level directory, or on the file specified if
+    using the -s option:
 
         1. filenames are correctly formatted
         2. that essential metadata items can be read from each file's contents
@@ -30,6 +31,8 @@ OPTIONS
     -f, --file-format
         the CMOR version of the input netCDF files to be validated
         (CMIP5 or CMIP6) (default: CMIP6)
+    -s, --single-file
+        validate a single specified file rather than a directory
     -l LOG_LEVEL, --log-level LOG_LEVEL
         set logging level to one of debug, info, warn (the default), or error
 
@@ -50,7 +53,6 @@ DEPENDENCIES:
         JASMIN
 """
 import argparse
-import logging
 import logging.config
 import os
 import sys
@@ -77,6 +79,9 @@ def parse_args():
                         help='the CMOR version of the input netCDF files '
                              'being submitted (CMIP5 or CMIP6) (default: '
                              '%(default)s)')
+    parser.add_argument('-s', '--single-file', help='validate a single '
+                        'specified file rather than a directory',
+                        action='store_true')
     parser.add_argument('-l', '--log-level', help='set logging level to one '
                                                   'of debug, info, warn (the '
                                                   'default), or error')
@@ -95,12 +100,15 @@ def main(args):
 
     num_errors_found = 0
 
-    data_files = list_files(os.path.expandvars(
-        os.path.expanduser(args.directory)))
-    if not data_files:
-        msg = 'No data files found in directory: {}'.format(args.directory)
-        logger.error(msg)
-        sys.exit(1)
+    if args.single_file:
+        data_files = [args.directory]
+    else:
+        data_files = list_files(os.path.expandvars(
+            os.path.expanduser(args.directory)))
+        if not data_files:
+            msg = 'No data files found in directory: {}'.format(args.directory)
+            logger.error(msg)
+            sys.exit(1)
 
     logger.debug('%s files found.', len(data_files))
 

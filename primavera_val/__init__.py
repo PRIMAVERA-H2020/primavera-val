@@ -147,18 +147,40 @@ def load_cube(filename):
     :returns: An Iris cube containing the loaded file
     :raises FileValidationError: If the file generates more than a single cube
     """
-    iris.FUTURE.netcdf_promote = True
-
     try:
-        cubes = iris.load(filename)
+        try:
+            cubes = iris.load(filename)
+        except AttributeError:
+            # Until https://github.com/SciTools/iris/pull/2485 is complete
+            # add this fix for certain hybrid height (model level) variables
+            cubes = iris.load_raw(filename)
+            if len(cubes) != 2:
+                msg = ('More than two cubes found when fixing hybrid height '
+                       'bounds in file: {}'.format(filename))
+                raise FileValidationError(msg)
+            bounds_cube = None
+            data_cube = None
+            for cube in cubes:
+                if cube.var_name.endswith('_bnds'):
+                    bounds_cube = cube
+                else:
+                    data_cube = cube
+            if not bounds_cube or not data_cube:
+                msg = ('Unable to find data and bounds when fixing hybrid '
+                       'height bounds in file: {}'.format(filename))
+                raise FileValidationError(msg)
+            coord_name = bounds_cube.long_name.replace('+1/2', '')
+            bounds_coord = data_cube.coord(coord_name)
+            bounds_coord.bounds = bounds_cube.data
+            cubes = iris.cube.CubeList([data_cube])
     except Exception:
         msg = 'Unable to load data from file: {}'.format(filename)
         raise FileValidationError(msg)
 
     var_name = os.path.basename(filename).split('_')[0]
 
-    var_cubes = cubes.extract(iris.Constraint(cube_func=lambda cube:
-                                              cube.var_name == var_name))
+    var_cubes = cubes.extract(iris.Constraint(cube_func=lambda lcube:
+                                              lcube.var_name == var_name))
 
     if not var_cubes:
         msg = ("Filename '{}' does not load to a single variable".
@@ -231,31 +253,31 @@ def _make_partial_date_time(date_string, frequency):
     :raises ValueError: If the string is not in a known format.
     """
     if frequency in ('yr', 'dec'):
-        pdt_str = PartialDateTime(year=int(date_string[0:4]))
+        pdt = PartialDateTime(year=int(date_string[0:4]))
     elif frequency == 'mon':
-        pdt_str = PartialDateTime(year=int(date_string[0:4]),
-                                  month=int(date_string[4:6]))
+        pdt = PartialDateTime(year=int(date_string[0:4]),
+                              month=int(date_string[4:6]))
     elif frequency == 'day':
-        pdt_str = PartialDateTime(year=int(date_string[0:4]),
-                                  month=int(date_string[4:6]),
-                                  day=int(date_string[6:8]))
+        pdt = PartialDateTime(year=int(date_string[0:4]),
+                              month=int(date_string[4:6]),
+                              day=int(date_string[6:8]))
     elif frequency in ('6hr', '3hr', '1hr', 'hr'):
-        pdt_str = PartialDateTime(year=int(date_string[0:4]),
-                                  month=int(date_string[4:6]),
-                                  day=int(date_string[6:8]),
-                                  hour=int(date_string[8:10]),
-                                  minute=int(date_string[10:12]))
+        pdt = PartialDateTime(year=int(date_string[0:4]),
+                              month=int(date_string[4:6]),
+                              day=int(date_string[6:8]),
+                              hour=int(date_string[8:10]),
+                              minute=int(date_string[10:12]))
     elif frequency == 'subhr':
-        pdt_str = PartialDateTime(year=int(date_string[0:4]),
-                                  month=int(date_string[4:6]),
-                                  day=int(date_string[6:8]),
-                                  hour=int(date_string[8:10]),
-                                  minute=int(date_string[10:12]),
-                                  second=int(date_string[12:14]))
+        pdt = PartialDateTime(year=int(date_string[0:4]),
+                              month=int(date_string[4:6]),
+                              day=int(date_string[6:8]),
+                              hour=int(date_string[8:10]),
+                              minute=int(date_string[10:12]),
+                              second=int(date_string[12:14]))
     else:
         raise ValueError('Unsupported frequency string {}'.format(frequency))
 
-    return pdt_str
+    return pdt
 
 
 def _check_start_end_times(cube, metadata):
