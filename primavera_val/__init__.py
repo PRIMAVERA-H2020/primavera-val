@@ -9,6 +9,7 @@ Requires:
     Iris: http://scitools.org.uk/iris/
         Tested under Iris 1.10 as installed at JASMIN
 """
+import logging
 import os
 import random
 import re
@@ -16,6 +17,7 @@ import re
 import iris
 from iris.time import PartialDateTime
 
+logger = logging.getLogger(__name__)
 
 FREQUENCY_VALUES = ['ann', 'mon', 'day', '6hr', '3hr', '1hr', 'subhr', 'fx']
 
