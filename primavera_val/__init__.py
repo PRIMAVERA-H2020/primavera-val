@@ -134,7 +134,10 @@ def validate_file_contents(cube, metadata):
     :param dict metadata: Metadata obtained from the file
     :returns: A boolean
     """
-    _check_start_end_times(cube, metadata)
+    try:
+        _check_start_end_times(cube, metadata)
+    except FileValidationError:
+        pass
     _check_contiguity(cube, metadata)
     _check_data_point(cube, metadata)
 
