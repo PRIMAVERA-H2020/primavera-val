@@ -136,9 +136,12 @@ def validate_file_contents(cube, metadata):
     """
     try:
         _check_start_end_times(cube, metadata)
-    except FileValidationError:
-        pass
-    _check_contiguity(cube, metadata)
+    except FileValidationError as fve:
+        logger.warning(fve.message)
+    try: 
+        _check_contiguity(cube, metadata)
+    except FileValidationError as fve:
+        logger.warning(fve.message)
     _check_data_point(cube, metadata)
 
 
