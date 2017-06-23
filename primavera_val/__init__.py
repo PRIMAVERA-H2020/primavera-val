@@ -162,24 +162,21 @@ def load_cube(filename):
             # Until https://github.com/SciTools/iris/pull/2485 is complete
             # add this fix for certain hybrid height (model level) variables
             cubes = iris.load_raw(filename)
-            if len(cubes) != 2:
-                msg = ('More than two cubes found when fixing hybrid height '
-                       'bounds in file: {}'.format(filename))
-                raise FileValidationError(msg)
-            bounds_cube = None
+            bounds_cubes = iris.cube.CubeList()
             data_cube = None
             for cube in cubes:
                 if cube.var_name.endswith('_bnds'):
-                    bounds_cube = cube
+                    bounds_cubes.append(cube)
                 else:
                     data_cube = cube
-            if not bounds_cube or not data_cube:
+            if not bounds_cubes or not data_cube:
                 msg = ('Unable to find data and bounds when fixing hybrid '
                        'height bounds in file: {}'.format(filename))
                 raise FileValidationError(msg)
-            coord_name = bounds_cube.long_name.replace('+1/2', '')
-            bounds_coord = data_cube.coord(coord_name)
-            bounds_coord.bounds = bounds_cube.data
+            for bounds_cube in bounds_cubes:
+                coord_name = bounds_cube.long_name.replace('+1/2', '')
+                bounds_coord = data_cube.coord(coord_name)
+                bounds_coord.bounds = bounds_cube.data
             cubes = iris.cube.CubeList([data_cube])
     except Exception:
         msg = 'Unable to load data from file: {}'.format(filename)
