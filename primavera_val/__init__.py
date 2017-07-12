@@ -51,10 +51,13 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
     metadata = {'basename': basename, 'directory': directory}
 
     # split the filename into sections
-    filename_sects = basename.rstrip('.nc').split('_')
+    if basename.endswith('-clim.nc'):
+        filename_sects = basename.rstrip('-clim.nc').split('_')
+    else:
+        filename_sects = basename.rstrip('.nc').split('_')
 
     # but if experiment present_day was in the filename, join these sections
-    # back together
+    # back together. This should only occur in pre-PRIMAVERA data.
     if filename_sects[3] == 'present' and filename_sects[4] == 'day':
         filename_sects[3] += '_' + filename_sects.pop(4)
 
@@ -290,8 +293,14 @@ def _check_start_end_times(cube, metadata):
     file_end_date = metadata['end_date']
 
     time = cube.coord('time')
-    data_start = time.units.num2date(time.points[0])
-    data_end = time.units.num2date(time.points[-1])
+    if metadata['basename'].endswith('-clim.nc'):
+        # climatology so use bounds
+        data_start = time.units.num2date(time.bounds[0][0])
+        data_end = time.units.num2date(time.bounds[-1][1])
+    else:
+        # normal data so use points
+        data_start = time.units.num2date(time.points[0])
+        data_end = time.units.num2date(time.points[-1])
 
     if file_start_date != data_start:
         msg = ('Start date in filename does not match the first time in the '
