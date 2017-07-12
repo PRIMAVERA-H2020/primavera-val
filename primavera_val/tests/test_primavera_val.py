@@ -32,6 +32,13 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
         self.metadata_6 = identify_filename_metadata(filename_6,
                                                      file_format='CMIP6')
 
+        filename_6_clim = ('phalf_Amon_HadGEM3-GC31-LM_highresSST-present_'
+                           'r1i1p1f1_gn_195001-195101-clim.nc')
+
+        self.metadata_6_clim = identify_filename_metadata(filename_6_clim,
+                                                     file_format='CMIP6')
+
+
     def test_cmor_name(self):
         self.assertEqual(self.metadata_5['cmor_name'], 'clt')
 
@@ -86,6 +93,10 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
     def test_end_date_6(self):
         self.assertEqual(self.metadata_6['end_date'],
                          PartialDateTime(year=1950, month=12, day=30))
+
+    def test_end_date_6_climatology(self):
+        self.assertEqual(self.metadata_6_clim['end_date'],
+                         PartialDateTime(year=1951, month=01))
 
     def test_bad_date_format_6(self):
         filename = 'prc_day_highres-future_HadGEM3_r1i1p1f1_gn_1950-1950.nc'
@@ -153,6 +164,16 @@ class TestCheckStartEndTimes(unittest.TestCase):
         self.metadata_4 = {'basename': 'file.nc',
                            'start_date': PartialDateTime(year=2014, month=12),
                            'end_date': PartialDateTime(year=2015, month=9)}
+        self.metadata_5 = {'basename': 'file-clim.nc',
+                           'start_date': PartialDateTime(year=2014, month=12,
+                                                         day=20),
+                           'end_date': PartialDateTime(year=2014, month=12,
+                                                       day=22)}
+        self.metadata_6 = {'basename': 'file-clim.nc',
+                           'start_date': PartialDateTime(year=2014, month=12,
+                                                         day=21),
+                           'end_date': PartialDateTime(year=2014, month=12,
+                                                       day=22)}
 
     def test_equals(self):
         self.assertTrue(_check_start_end_times(self.cube, self.metadata_1))
@@ -168,6 +189,15 @@ class TestCheckStartEndTimes(unittest.TestCase):
     def test_fails_end(self):
         self.assertRaises(FileValidationError, _check_start_end_times,
                           self.cube, self.metadata_4)
+
+    def test_climatology_passes(self):
+        self.cube.coord('time').guess_bounds()
+        self.assertTrue(_check_start_end_times(self.cube, self.metadata_5))
+
+    def test_climatology_fails(self):
+        self.cube.coord('time').guess_bounds()
+        self.assertRaises(FileValidationError, _check_start_end_times,
+                          self.cube, self.metadata_6)
 
 
 class TestCheckContiguity(unittest.TestCase):
