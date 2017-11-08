@@ -57,9 +57,12 @@ import logging.config
 import os
 import sys
 
+import iris
+
 from primavera_val import (identify_filename_metadata, load_cube, list_files,
                            identify_contents_metadata, validate_file_contents,
-                           FileValidationError)
+                           FileValidationError, identify_cell_measures_metadata,
+                           validate_cell_measures_contents)
 
 DEFAULT_LOG_LEVEL = logging.WARNING
 DEFAULT_LOG_FORMAT = '%(levelname)s: %(message)s'
@@ -81,6 +84,8 @@ def parse_args():
                              '%(default)s)')
     parser.add_argument('-s', '--single-file', help='validate a single '
                         'specified file rather than a directory',
+                        action='store_true')
+    parser.add_argument('-c', '--cell-measure', help='file is a cell measure',
                         action='store_true')
     parser.add_argument('-l', '--log-level', help='set logging level to one '
                                                   'of debug, info, warn (the '
@@ -116,9 +121,15 @@ def main(args):
         try:
             # run the four checks that the validate script runs
             metadata = identify_filename_metadata(filename, args.file_format)
-            cube = load_cube(filename)
-            metadata.update(identify_contents_metadata(cube, filename))
-            validate_file_contents(cube, metadata)
+            if not args.cell_measure:
+                cube = load_cube(filename)
+                metadata.update(identify_contents_metadata(cube, filename))
+                validate_file_contents(cube, metadata)
+            else:
+                cf = iris.fileformats.cf.CFReader(filename)
+                metadata.update(identify_cell_measures_metadata(cf, filename))
+                validate_cell_measures_contents(cf, metadata)
+
         except FileValidationError as exc:
             logger.warning('File failed validation:\n%s', exc.message)
             num_errors_found += 1

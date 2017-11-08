@@ -94,6 +94,48 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
     return metadata
 
 
+def identify_cell_measures_metadata(cfreader, filename):
+    """
+    Get metadata information from a cell measures variable.
+
+    :param iris.fileformats.cf.CFReader cfreader: The CF metadata from
+        `filename`
+    :param str filename: The name of the file to gather information from
+    :returns: A dictionary of the identified metadata.
+    """
+    metadata = {}
+
+    try:
+        # This could be None if cube.var_name isn't defined
+        cmor_name = os.path.basename(filename).split('_')[0]
+        metadata['var_name'] = cmor_name
+        metadata['units'] = str(cfreader.cf_group[cmor_name].
+                                getncattr('units'))
+        metadata['long_name'] = cfreader.cf_group[cmor_name].getncattr(
+            'long_name')
+        metadata['standard_name'] = cfreader.cf_group[cmor_name].getncattr(
+            'standard_name')
+        metadata['time_units'] = None
+        metadata['calendar'] = None
+        # CMIP5 doesn't have an activity id and so supply a default
+        metadata['activity_id'] = cfreader.cf_group.global_attributes.get(
+            'activity_id', 'HighResMIP')
+        try:
+            metadata['institute'] = (cfreader.cf_group.
+                                     global_attributes['institution_id'])
+        except KeyError:
+            # CMIP5 uses institute_id but we should not be processing CMIP5
+            # data but handle it just in case
+            metadata['institute'] = (cfreader.cf_group.
+                                     global_attributes['institute_id'])
+    except Exception as exc:
+        msg = ('Unable to extract metadata from the contents of file {}\n{}'.
+               format(filename, exc.message))
+        raise FileValidationError(msg)
+
+    return metadata
+
+
 def identify_contents_metadata(cube, filename):
     """
     Uses Iris to get additional metadata from the files contents
@@ -140,6 +182,18 @@ def validate_file_contents(cube, metadata):
     _check_start_end_times(cube, metadata)
     _check_contiguity(cube, metadata)
     _check_data_point(cube, metadata)
+
+
+def validate_cell_measures_contents(cfreader, metadata):
+    """
+    Check whether the contents of the cube loaded from a file are valid
+
+    :param iris.fileformats.cf.CFReader cfreader: The CF metadata from the
+        file
+    :param dict metadata: Metadata obtained from the file
+    :returns: A boolean
+    """
+    _check_cell_measure_point(cfreader, metadata)
 
 
 def load_cube(filename):
@@ -355,6 +409,41 @@ def _check_data_point(cube, metadata):
 
     try:
         _data_point = cube.data[point_index]
+    except Exception:
+        msg = 'Unable to extract data point {} from file: {}'.format(
+            point_index, metadata['basename'])
+        raise FileValidationError(msg)
+    else:
+        return True
+
+
+def _check_cell_measure_point(cfreader, metadata):
+    """
+    Check if a data point can be read from a file containing a cell measure
+
+    :param iris.fileformats.cf.CFReader cfreader: The CF metadata from the
+        file
+    :param dict metadata: Metadata obtained from the file
+    :returns: True if a random point can be read from the file
+    """
+    cell_measure = None
+
+    for cf_group in cfreader.cf_group.values():
+        if cf_group.cf_name == metadata['cmor_name']:
+            cell_measure = cf_group
+            break
+
+    if not cell_measure:
+        msg = ('Unable to find cell measure in cfreader for variable {}'.
+               format(metadata['cmor_name']))
+        raise FileValidationError(msg)
+
+    point_index = []
+    for dim_length in cell_measure.cf_data.shape:
+        point_index.append(random.randint(0, dim_length - 1))
+
+    try:
+        _data_point = cell_measure.cf_data[tuple(point_index)]
     except Exception:
         msg = 'Unable to extract data point {} from file: {}'.format(
             point_index, metadata['basename'])
