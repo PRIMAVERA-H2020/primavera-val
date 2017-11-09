@@ -52,9 +52,9 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
 
     # split the filename into sections
     if basename.endswith('-clim.nc'):
-        filename_sects = basename.rstrip('-clim.nc').split('_')
+        filename_sects = basename.rpartition('-clim.nc')[0].split('_')
     else:
-        filename_sects = basename.rstrip('.nc').split('_')
+        filename_sects = basename.rpartition('.nc')[0].split('_')
 
     # but if experiment present_day was in the filename, join these sections
     # back together. This should only occur in pre-PRIMAVERA data.
