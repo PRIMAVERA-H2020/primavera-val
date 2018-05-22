@@ -1,7 +1,7 @@
 # primavera-val
 
 &copy; British Crown Copyright 2017, Met Office.
-Please see LICENSE.rst for license details.
+Please see LICENSE for license details.
 
 
 A simple data validation test for PRIMAVERA stream 1 data files. The following
