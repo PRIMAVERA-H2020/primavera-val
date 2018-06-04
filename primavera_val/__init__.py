@@ -82,7 +82,7 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
         raise FileValidationError(msg)
 
     # fixed variables won't have a time range and so create blank values
-    potential_missing_values = ['start_date', 'end_gate']
+    potential_missing_values = ['start_date', 'end_date']
     for missing_value in potential_missing_values:
         if not missing_value in metadata:
             metadata[missing_value] = None
