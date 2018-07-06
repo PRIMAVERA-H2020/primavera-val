@@ -4,8 +4,10 @@
 """
 Tests for primavera_val.
 """
-import unittest
+from __future__ import unicode_literals, division, absolute_import
 import mock
+import six
+import unittest
 
 import iris
 from iris.time import PartialDateTime
@@ -36,8 +38,7 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
                            'r1i1p1f1_gn_195001-195101-clim.nc')
 
         self.metadata_6_clim = identify_filename_metadata(filename_6_clim,
-                                                     file_format='CMIP6')
-
+                                                          file_format='CMIP6')
 
     def test_cmor_name(self):
         self.assertEqual(self.metadata_5['cmor_name'], 'clt')
@@ -88,7 +89,7 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
 
     def test_start_date_6(self):
         self.assertEqual(self.metadata_6['start_date'],
-                         PartialDateTime(year=1950, month=01, day=01))
+                         PartialDateTime(year=1950, month=1, day=1))
 
     def test_end_date_6(self):
         self.assertEqual(self.metadata_6['end_date'],
@@ -96,7 +97,7 @@ class TestIdentifyFilenameMetadata(unittest.TestCase):
 
     def test_end_date_6_climatology(self):
         self.assertEqual(self.metadata_6_clim['end_date'],
-                         PartialDateTime(year=1951, month=01))
+                         PartialDateTime(year=1951, month=1))
 
     def test_bad_date_format_6(self):
         filename = 'prc_day_highres-future_HadGEM3_r1i1p1f1_gn_1950-1950.nc'
@@ -138,10 +139,10 @@ class TestIdentifyContentsMetadata(unittest.TestCase):
     def test_exception_raised(self):
         del self.cube.attributes['institution_id']
 
-        self.assertRaisesRegexp(
+        six.assertRaisesRegex(
+            self,
             FileValidationError,
-            'Unable to extract metadata from the contents of file abc.nc\n'
-            'institute_id',
+            "Unable to extract metadata from the contents of file abc.nc.*",
             identify_contents_metadata,
             self.cube,
             'abc.nc'
@@ -215,12 +216,6 @@ class TestCheckContiguity(unittest.TestCase):
     def test_not_contiguous(self):
         self.assertRaises(FileValidationError, _check_contiguity,
                           self.bad_cube, {'basename': 'file.nc'})
-
-
-class TestCheckDataPoint(unittest.TestCase):
-    def test_todo(self):
-        # TODO: figure put how to test this function
-        pass
 
 
 class TestGetFrequency(unittest.TestCase):

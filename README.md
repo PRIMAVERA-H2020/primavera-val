@@ -1,6 +1,7 @@
+[![Build Status](https://travis-ci.com/PRIMAVERA-H2020/primavera-val.svg?branch=master)](https://travis-ci.com/PRIMAVERA-H2020/primavera-val)
 # primavera-val
 
-&copy; British Crown Copyright 2017, Met Office.
+&copy; Copyright 2018, PRIMAVERA.
 Please see LICENSE for license details.
 
 
@@ -16,7 +17,8 @@ the directory specified, or on the file specified if using the -s option:
 
 #### Usage
 ```
-validate_data.py [-h] [-f FILE_FORMAT] [-s] [-l LOG_LEVEL] directory
+usage: validate_data.py [-h] [-f FILE_FORMAT] [-s] [-c] [-l LOG_LEVEL]
+                        directory
 
 Validate a directory of PRIMAVERA data
 
@@ -28,7 +30,9 @@ optional arguments:
   -f FILE_FORMAT, --file-format FILE_FORMAT
                         the CMOR version of the input netCDF files being
                         submitted (CMIP5 or CMIP6) (default: CMIP6)
-  -s, --single-file     validate a single specified file rather than a directory
+  -s, --single-file     validate a single specified file rather than a
+                        directory
+  -c, --cell-measure    file is a cell measure
   -l LOG_LEVEL, --log-level LOG_LEVEL
                         set logging level to one of debug, info, warn (the
                         default), or error
@@ -44,7 +48,7 @@ To get a message displayed showing if files passed validation use the
 
 #### Requires
 
-Iris (http://scitools.org.uk/iris/) Tested under Iris 1.10 as installed at JASMIN
+Iris (http://scitools.org.uk/iris/) Tested under Iris 1.13 as installed at JASMIN and Iris 2.1.
 
 #### Environment Variables
 

@@ -22,7 +22,7 @@ install:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.12.1 scipy=0.19.1 iris=1.13 netcdf4=1.2.4 matplotlib=1.5.3 mock filelock pytest;
     elif [[ "$TRAVIS_PYTHON_VERSION" == "3.6" ]]; then
-      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.14 scipy=1.1 iris=2.1 netcdf4=1.4 matplotlib=2.2 mock pytest;
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy=1.14 scipy=1.1 iris=2.1 netcdf4=1.4 matplotlib=2.2 mock filelock pytest;
     fi
   - source activate test-environment
 

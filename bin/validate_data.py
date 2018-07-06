@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # (C) British Crown Copyright 2017, Met Office.
 # Please see LICENSE.rst for license details.
 """
@@ -131,7 +131,7 @@ def main(args):
                 validate_cell_measures_contents(cf, metadata)
 
         except FileValidationError as exc:
-            logger.warning('File failed validation:\n%s', exc.message)
+            logger.warning('File failed validation:\n%s', exc.__str__())
             num_errors_found += 1
         else:
             _output.append(metadata)

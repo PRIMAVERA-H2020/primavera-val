@@ -9,6 +9,7 @@ Requires:
     Iris: http://scitools.org.uk/iris/
         Tested under Iris 1.10 as installed at JASMIN
 """
+from __future__ import unicode_literals, division, absolute_import
 import os
 import random
 import re
@@ -73,7 +74,8 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
                     metadata['end_date'] = _make_partial_date_time(
                         end_date, frequency)
                 except ValueError:
-                    msg = 'Unknown date format in filename: {}'.format(filename)
+                    msg = 'Unknown date format in filename: {}'.format(
+                        filename)
                     raise FileValidationError(msg)
             else:
                 metadata[cmpt_name] = cmpt
@@ -84,7 +86,7 @@ def identify_filename_metadata(filename, file_format='CMIP6'):
     # fixed variables won't have a time range and so create blank values
     potential_missing_values = ['start_date', 'end_date']
     for missing_value in potential_missing_values:
-        if not missing_value in metadata:
+        if missing_value not in metadata:
             metadata[missing_value] = None
 
     metadata['filesize'] = os.path.getsize(filename)
@@ -136,7 +138,7 @@ def identify_cell_measures_metadata(cfreader, filename):
                                      global_attributes['institute_id'])
     except Exception as exc:
         msg = ('Unable to extract metadata from the contents of file {}\n{}'.
-               format(filename, exc.message))
+               format(filename, exc.__str__()))
         raise FileValidationError(msg)
 
     return metadata
@@ -171,7 +173,7 @@ def identify_contents_metadata(cube, filename):
             metadata['institute'] = cube.attributes['institute_id']
     except Exception as exc:
         msg = ('Unable to extract metadata from the contents of file {}\n{}'.
-               format(filename, exc.message))
+               format(filename, exc.__str__()))
         raise FileValidationError(msg)
 
     return metadata
@@ -275,8 +277,8 @@ def list_files(directory, suffix='.nc'):
 def _get_frequency(table_name):
     """
     Finds the frequency of the data in the specified table name.
-    
-    :param str table_name: The name of the table 
+
+    :param str table_name: The name of the table
     :returns: The frequency of the data in the table
     :rtype: str
     :raises ValueError: If no frequency can be found in the table name
