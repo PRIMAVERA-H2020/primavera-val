@@ -217,6 +217,14 @@ class TestCheckContiguity(unittest.TestCase):
         self.assertRaises(FileValidationError, _check_contiguity,
                           self.bad_cube, {'basename': 'file.nc'})
 
+    def test_time_point(self):
+        self.bad_cube.cell_methods = self.bad_cube.cell_methods + (
+            iris.coords.CellMethod('point', coords=('time',)),
+        )
+
+        self.assertTrue(
+            _check_contiguity(self.bad_cube, {'basename': 'file.nc'}))
+
 
 class TestGetFrequency(unittest.TestCase):
     def setUp(self):

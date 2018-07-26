@@ -387,6 +387,16 @@ def _check_contiguity(cube, metadata):
     """
     time_coord = cube.coord('time')
 
+    time_point = False
+    for cell_method in cube.cell_methods:
+        if cell_method.method == 'point':
+            time_point = True
+
+    if time_point:
+        # The time coordinate is points rather than a mean and so contiguity
+        # errors won't show up with this method so pass the check.
+        return True
+
     if time_coord.has_bounds():
         if not time_coord.is_contiguous():
             msg = ('The points in the time dimension in the file are not '
