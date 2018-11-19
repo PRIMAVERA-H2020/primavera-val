@@ -10,6 +10,7 @@ Requires:
         Tested under Iris 1.10 as installed at JASMIN
 """
 from __future__ import unicode_literals, division, absolute_import
+import datetime
 import os
 import random
 import re
@@ -364,6 +365,11 @@ def _check_start_end_times(cube, metadata):
         data_start = time.units.num2date(time.points[0])
         data_end = time.units.num2date(time.points[-1])
 
+    if metadata['frequency'] in ['6hr', '3hr', '1hr',
+                                 '6hrPt', '3hrPt', '1hrPt']:
+        data_start = _round_time(data_start, 60)
+        data_end = _round_time(data_end, 60)
+
     if file_start_date != data_start:
         msg = ('Start date in filename does not match the first time in the '
                'file ({}): {}'.format(str(data_start), metadata['basename']))
@@ -374,6 +380,21 @@ def _check_start_end_times(cube, metadata):
         raise FileValidationError(msg)
     else:
         return True
+
+
+def _round_time(dt=None, round_to=60):
+    """
+    Round a datetime object to any time lapse in seconds
+    Author: Thierry Husson 2012 - Use it as you want but don't blame me.
+    From: https://stackoverflow.com/a/10854034
+
+    :param datetime.datetime dt: The datetime to round
+    :param int round_to: The closest number of seconds to round to, default
+        one minute.
+    """
+    seconds = (dt.replace(tzinfo=None) - dt.min).seconds
+    rounding = (seconds + round_to / 2) // round_to * round_to
+    return dt + datetime.timedelta(0, rounding-seconds, -dt.microsecond)
 
 
 def _check_contiguity(cube, metadata):
