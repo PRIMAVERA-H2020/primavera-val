@@ -5,6 +5,7 @@
 Tests for primavera_val.
 """
 from __future__ import unicode_literals, division, absolute_import
+import datetime
 import mock
 import six
 import unittest
@@ -15,7 +16,8 @@ from iris.tests.stock import realistic_3d
 
 from primavera_val import (identify_filename_metadata, _get_frequency,
                            identify_contents_metadata, _check_contiguity,
-                           _check_start_end_times, FileValidationError)
+                           _check_start_end_times, _round_time,
+                           FileValidationError)
 
 
 class TestIdentifyFilenameMetadata(unittest.TestCase):
@@ -155,26 +157,39 @@ class TestCheckStartEndTimes(unittest.TestCase):
 
         self.metadata_1 = {'basename': 'file.nc',
                            'start_date': PartialDateTime(year=2014, month=12),
-                           'end_date': PartialDateTime(year=2014, month=12)}
+                           'end_date': PartialDateTime(year=2014, month=12),
+                           'frequency': 'mon'}
         self.metadata_2 = {'basename': 'file.nc',
                            'start_date': PartialDateTime(year=2014, month=11),
-                           'end_date': PartialDateTime(year=2014, month=12)}
+                           'end_date': PartialDateTime(year=2014, month=12),
+                           'frequency': 'mon'}
         self.metadata_3 = {'basename': 'file.nc',
                            'start_date': PartialDateTime(year=2013, month=12),
-                           'end_date': PartialDateTime(year=2014, month=12)}
+                           'end_date': PartialDateTime(year=2014, month=12),
+                           'frequency': 'mon'}
         self.metadata_4 = {'basename': 'file.nc',
                            'start_date': PartialDateTime(year=2014, month=12),
-                           'end_date': PartialDateTime(year=2015, month=9)}
+                           'end_date': PartialDateTime(year=2015, month=9),
+                           'frequency': 'mon'}
         self.metadata_5 = {'basename': 'file-clim.nc',
                            'start_date': PartialDateTime(year=2014, month=12,
                                                          day=20),
                            'end_date': PartialDateTime(year=2014, month=12,
-                                                       day=22)}
+                                                       day=22),
+                           'frequency': 'mon'}
         self.metadata_6 = {'basename': 'file-clim.nc',
                            'start_date': PartialDateTime(year=2014, month=12,
                                                          day=21),
                            'end_date': PartialDateTime(year=2014, month=12,
-                                                       day=22)}
+                                                       day=22),
+                           'frequency': 'mon'}
+        self.metadata_high_freq = {
+            'basename': 'file.nc',
+            'start_date': PartialDateTime(year=2014, month=12, day=21,
+                                          hour=0, minute=0),
+            'end_date': PartialDateTime(year=2014, month=12, day=22,
+                                        hour=12, minute=0),
+            'frequency': '6hr'}
 
     def test_equals(self):
         self.assertTrue(_check_start_end_times(self.cube, self.metadata_1))
@@ -200,6 +215,33 @@ class TestCheckStartEndTimes(unittest.TestCase):
         self.assertRaises(FileValidationError, _check_start_end_times,
                           self.cube, self.metadata_6)
 
+    def test_high_freq(self):
+        self.assertTrue(_check_start_end_times(self.cube,
+                                               self.metadata_high_freq))
+
+    def test_high_freq_rounded_fails(self):
+        time_coord = self.cube.coord('time')
+        time_coord_points = time_coord.points.copy()
+        time_coord_points[-1] += 34 / 60**2
+        time_coord.points = time_coord_points
+        self.assertRaises(FileValidationError, _check_start_end_times,
+                          self.cube, self.metadata_high_freq)
+
+    def test_high_freq_rounded(self):
+        self.metadata_high_freq['end_date'] = PartialDateTime(
+            year=2014,
+            month=12,
+            day=22,
+            hour=12,
+            minute=1
+        )
+        time_coord = self.cube.coord('time')
+        time_coord_points = time_coord.points.copy()
+        time_coord_points[-1] += 34 / 60**2
+        time_coord.points = time_coord_points
+        self.assertTrue(_check_start_end_times(self.cube,
+                                               self.metadata_high_freq))
+
 
 class TestCheckContiguity(unittest.TestCase):
     def setUp(self):
@@ -224,6 +266,32 @@ class TestCheckContiguity(unittest.TestCase):
 
         self.assertTrue(
             _check_contiguity(self.bad_cube, {'basename': 'file.nc'}))
+
+
+class TestRoundTime(unittest.TestCase):
+    def test_minute_down(self):
+        input_time = datetime.datetime(2018, 11, 19, 12, 29, 22)
+        output_time = _round_time(input_time)
+        self.assertEqual(output_time,
+                         datetime.datetime(2018, 11, 19, 12, 29))
+
+    def test_minute_up(self):
+        input_time = datetime.datetime(2018, 11, 19, 12, 29, 32)
+        output_time = _round_time(input_time)
+        self.assertEqual(output_time,
+                         datetime.datetime(2018, 11, 19, 12, 30))
+
+    def test_nothing_required(self):
+        input_time = datetime.datetime(2018, 11, 19, 12, 29)
+        output_time = _round_time(input_time)
+        self.assertEqual(output_time,
+                         datetime.datetime(2018, 11, 19, 12, 29))
+
+    def test_hour_down(self):
+        input_time = datetime.datetime(2018, 11, 19, 12, 29, 22)
+        output_time = _round_time(input_time, 60**2)
+        self.assertEqual(output_time,
+                         datetime.datetime(2018, 11, 19, 12, 00))
 
 
 class TestGetFrequency(unittest.TestCase):
