@@ -388,11 +388,16 @@ def _round_time(dt=None, round_to=60):
     Author: Thierry Husson 2012 - Use it as you want but don't blame me.
     From: https://stackoverflow.com/a/10854034
 
-    :param datetime.datetime dt: The datetime to round
+    :param datetime.datetime dt: The datetime to round. Can also be a
+        cftime.datetime like object, which has slightly different
+        properties.
     :param int round_to: The closest number of seconds to round to, default
         one minute.
     """
-    seconds = (dt.replace(tzinfo=None) - dt.min).seconds
+    if hasattr(dt, 'tzinfo'):
+        dt.replace(tzinfo=None)
+    diff = dt - dt.replace(hour=0, minute=0, second=0)
+    seconds = diff.seconds + (diff.microseconds / 1000000)
     rounding = (seconds + round_to / 2) // round_to * round_to
     return dt + datetime.timedelta(0, rounding-seconds, -dt.microsecond)
 

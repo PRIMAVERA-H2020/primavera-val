@@ -10,6 +10,7 @@ import mock
 import six
 import unittest
 
+import cftime
 import iris
 from iris.time import PartialDateTime
 from iris.tests.stock import realistic_3d
@@ -292,6 +293,16 @@ class TestRoundTime(unittest.TestCase):
         output_time = _round_time(input_time, 60**2)
         self.assertEqual(output_time,
                          datetime.datetime(2018, 11, 19, 12, 00))
+
+    def test_cftime(self):
+        # cftime datetime objects had floating point issues and can be
+        # 5 microseconds different so test this way rather than
+        # compare equality
+        input_time = cftime.DatetimeGregorian(2018, 11, 19, 12, 29, 22)
+        output_time = _round_time(input_time, 60**2)
+        time_diff = output_time - cftime.DatetimeGregorian(2018, 11, 19, 12, 00)
+        self.assertEqual(time_diff.days, 0)
+        self.assertEqual(time_diff.seconds, 0)
 
 
 class TestGetFrequency(unittest.TestCase):
