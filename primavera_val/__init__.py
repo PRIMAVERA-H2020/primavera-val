@@ -396,8 +396,8 @@ def _round_time(dt=None, round_to=60):
     """
     if hasattr(dt, 'tzinfo'):
         dt.replace(tzinfo=None)
-    diff = dt - dt.replace(hour=0, minute=0, second=0)
-    seconds = diff.seconds + (diff.microseconds / 1000000)
+    diff = dt - dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    seconds = diff.seconds
     rounding = (seconds + round_to / 2) // round_to * round_to
     return dt + datetime.timedelta(0, rounding-seconds, -dt.microsecond)
 
