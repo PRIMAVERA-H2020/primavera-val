@@ -292,7 +292,7 @@ class TestRoundTime(unittest.TestCase):
         input_time = datetime.datetime(2018, 11, 19, 12, 29, 22)
         output_time = _round_time(input_time, 60**2)
         self.assertEqual(output_time,
-                         datetime.datetime(2018, 11, 19, 12, 00))
+                         datetime.datetime(2018, 11, 19, 12, 0, 0))
 
     def test_cftime(self):
         # cftime datetime objects had floating point issues and can be
@@ -301,6 +301,19 @@ class TestRoundTime(unittest.TestCase):
         input_time = cftime.DatetimeGregorian(2018, 11, 19, 12, 29, 22)
         output_time = _round_time(input_time, 60**2)
         time_diff = output_time - cftime.DatetimeGregorian(2018, 11, 19, 12, 00)
+        self.assertEqual(time_diff.days, 0)
+        self.assertEqual(time_diff.seconds, 0)
+
+    def test_dt_subsecond(self):
+        input_time = datetime.datetime(2018, 11, 19, 0, 29, 59, 800000)
+        output_time = _round_time(input_time, 60)
+        self.assertEqual(output_time,
+                         datetime.datetime(2018, 11, 19, 0, 30, 0))
+
+    def test_cf_subsecond(self):
+        input_time = cftime.Datetime360Day(2018, 11, 19, 0, 29, 59, 800000)
+        output_time = _round_time(input_time, 60)
+        time_diff = output_time - cftime.Datetime360Day(2018, 11, 19, 0, 30, 0)
         self.assertEqual(time_diff.days, 0)
         self.assertEqual(time_diff.seconds, 0)
 
