@@ -452,7 +452,8 @@ def _check_data_point(cube, metadata):
     point_index = tuple(point_index)
 
     try:
-        _data_point = cube.data[point_index]
+        point_cube = cube[point_index]
+        _data_point = point_cube.data
     except Exception:
         msg = 'Unable to extract data point {} from file: {}'.format(
             point_index, metadata['basename'])
