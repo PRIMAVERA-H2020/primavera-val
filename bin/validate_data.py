@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# (C) British Crown Copyright 2017, Met Office.
+# (C) British Crown Copyright 2019, Met Office.
 # Please see LICENSE.rst for license details.
 """
 SYNOPSIS
@@ -49,13 +49,14 @@ ENVIRONMENT VARIABLES
 
 DEPENDENCIES:
     Iris:
-        http://scitools.org.uk/iris/ Tested under Iris 1.10 as installed at
-        JASMIN
+        http://scitools.org.uk/iris/ Tested under Iris 1.13 and Python 2.7 and with
+        Python 3 and Iris 2.2
 """
 import argparse
 import logging.config
 import os
 import sys
+import warnings
 
 import iris
 
@@ -68,6 +69,9 @@ DEFAULT_LOG_LEVEL = logging.WARNING
 DEFAULT_LOG_FORMAT = '%(levelname)s: %(message)s'
 
 logger = logging.getLogger(__name__)
+
+# Ignore warnings displayed when loading data
+warnings.filterwarnings("ignore")
 
 
 def parse_args():
