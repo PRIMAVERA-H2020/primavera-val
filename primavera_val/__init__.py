@@ -355,15 +355,19 @@ def _check_start_end_times(cube, metadata):
     file_start_date = metadata['start_date']
     file_end_date = metadata['end_date']
 
-    time = cube.coord('time')
-    if metadata['basename'].endswith('-clim.nc'):
-        # climatology so use bounds
-        data_start = time.units.num2date(time.bounds[0][0])
-        data_end = time.units.num2date(time.bounds[-1][1])
-    else:
-        # normal data so use points
-        data_start = time.units.num2date(time.points[0])
-        data_end = time.units.num2date(time.points[-1])
+    try:
+        time = cube.coord('time')
+        if metadata['basename'].endswith('-clim.nc'):
+            # climatology so use bounds
+            data_start = time.units.num2date(time.bounds[0][0])
+            data_end = time.units.num2date(time.bounds[-1][1])
+        else:
+            # normal data so use points
+            data_start = time.units.num2date(time.points[0])
+            data_end = time.units.num2date(time.points[-1])
+    except IndexError as exc:
+        raise FileValidationError('_check_start_end_times() IndexError ' +
+                                  ' '.join(exc.args))
 
     if metadata['frequency'] in ['6hr', '3hr', '1hr',
                                  '6hrPt', '3hrPt', '1hrPt']:
