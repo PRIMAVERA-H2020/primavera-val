@@ -366,8 +366,9 @@ def _check_start_end_times(cube, metadata):
             data_start = time.units.num2date(time.points[0])
             data_end = time.units.num2date(time.points[-1])
     except IndexError as exc:
-        raise FileValidationError('_check_start_end_times() IndexError ' +
-                                  ' '.join(exc.args))
+        raise FileValidationError('_check_start_end_times() IndexError in {} '
+                                  '{}'.format(metadata['basename'],
+                                              ' '.join(exc.args)))
 
     if metadata['frequency'] in ['6hr', '3hr', '1hr',
                                  '6hrPt', '3hrPt', '1hrPt']:
