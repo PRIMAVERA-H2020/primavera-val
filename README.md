@@ -1,7 +1,9 @@
-[![Build Status](https://travis-ci.com/PRIMAVERA-H2020/primavera-val.svg?branch=master)](https://travis-ci.com/PRIMAVERA-H2020/primavera-val)
+[![Build Status](https://travis-ci.com/PRIMAVERA-H2020/primavera-val.svg?branch=master)](https://travis-ci.com/PRIMAVERA-H2020/primavera-val) [![DOI](https://zenodo.org/badge/82658254.svg)](https://zenodo.org/badge/latestdoi/82658254)
+
+
 # primavera-val
 
-&copy; Copyright 2019, PRIMAVERA.
+&copy; Copyright 2020, PRIMAVERA.
 Please see LICENSE for license details.
 
 
